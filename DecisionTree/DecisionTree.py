@@ -6,13 +6,15 @@ Created on Mon Feb  8 07:28:38 2021
 """
 import numpy as np
 import pandas as pd
-import Node 
+from Node import Node 
+import os
+import TreeHelper
 
 
 class DecisionTree:
       
       
-    def __init__(self, filename):
+    def __init__(self, filename, maxDepth, InformationGainMethod):
           """
           
     
@@ -21,22 +23,31 @@ class DecisionTree:
           filename : string
               file path of csv that will be used to build the decision tree.
               The file must be a CSV with the expected output in the last column of each row
-    
+          maxDepth : integer
+              The maximum maxDepth the tree will go
+          InformationGainMethod : integer
+              An integer that selects what type of method will be used to determine information gain
+              0 is Shannon entropy, 1 is Majority Error, 2 is 
+              
           Returns
           -------
           None.
     
           """
+          if InformationGainMethod not in range(0,3):
+              raise ValueError("InformationGainMethod must be 0, 1, or 2")
+              
+              
           df = self.__processCSV(filename)
-          
-          self.head = self.__buildTree(df)
+          #print("CSV Processed")
+          self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
       
     def __processCSV(self, filename):
         """
         Process the CSV from a given filename into a dataframe used by the decision tree.
-        Will process the data into a form that the 
+        Will process the data into a form that the decision tree can use
 
         Parameters
         ----------
@@ -48,10 +59,12 @@ class DecisionTree:
         The data frame used to build the decision tree
 
         """
-      
-        return 0;
+        dirname = os.path.dirname(__file__)
+        filename = os.path.join(dirname, filename)
+        df = pd.read_csv(filename, header=None)
+        return df;
     
-    def __buildTree(self, df):
+    def __buildTree(self, df, maxDepth, InformationGainMethod):
         """
         Driver method for building the decision tree using the ID3 algorithm
 
@@ -65,9 +78,66 @@ class DecisionTree:
         The head node of the decision tree. 
 
         """
+        #print("Starting ID3")
+        return self.__ID3(df, maxDepth, 0, InformationGainMethod)
         
-        
-        return Node("string")
     
-    def __ID3(df):
+    def __ID3(self, df, maxDepth, currDepth,InformationGainMethod):
+        """
         
+
+        Parameters
+        ----------
+        df : TYPE
+            DESCRIPTION.
+        maxDepth : TYPE
+            DESCRIPTION.
+        currDepth : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        #print("On level ", currDepth, "of", maxDepth)
+        #print(df)
+        if currDepth >= maxDepth or len(df.columns) == 1 or len(df[df.columns[-1]].unique()) <= 1:
+            #print("Exiting")
+            return Node(TreeHelper.getMostCommonLabel(df))
+            
+        
+        else:
+            BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod)
+            
+            [SplitDFs, labels] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol)
+            currNode = Node(str(BestSplitterCol))
+            for index in range(0, len(labels)):
+                nodeToAdd = None
+               
+                if len(SplitDFs[index]) == 0:
+                    nodeToAdd = Node(TreeHelper.getMostCommonLabel(df))
+                else:
+                    nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod)
+                    
+                currNode.addBranch(labels[index],nodeToAdd)
+                                   
+                
+            return currNode
+
+    def Predict(self, row):
+        print("Starting Recursion")
+        row = list(row)
+        return self.__recursivePrediction(row, self.head)
+        
+    def __recursivePrediction(self, row, currNode):
+        print(currNode.category)
+        if(len(currNode.branches) == 0):
+            return currNode.category
+        else:
+            nextIndex = int(currNode.category)
+            nextNode = currNode.branches[row[nextIndex]]
+            del row[nextIndex]
+            print(row)
+            return self.__recursivePrediction(row, nextNode)

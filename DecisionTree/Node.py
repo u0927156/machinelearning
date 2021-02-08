@@ -20,16 +20,13 @@ class Node:
     """
     
     
-    def __init__(self, name, depth):
+    def __init__(self, name):
         """
         
-
         Parameters
         ----------
         name : string
             Determines the category of the node.
-        depth : integer
-            Determines the maximum depth of the decision tree
             
         Returns
         -------
