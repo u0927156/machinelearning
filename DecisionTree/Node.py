@@ -20,8 +20,7 @@ class Node:
     """
     
     
-    # 
-    def __init__(self, name):
+    def __init__(self, name, depth):
         """
         
 
@@ -29,7 +28,9 @@ class Node:
         ----------
         name : string
             Determines the category of the node.
-
+        depth : integer
+            Determines the maximum depth of the decision tree
+            
         Returns
         -------
         None.
@@ -42,7 +43,7 @@ class Node:
         
     def addBranch(self, value, node):
         """
-        
+        Adds a branch to the node
 
         Parameters
         ----------
@@ -61,7 +62,7 @@ class Node:
         
     def addBranches(self, values, nodes):
         """
-        
+        Adds several branches to the node
 
         Parameters
         ----------
