@@ -33,10 +33,74 @@ def findBestSplit(df, splitMethod):
     
     
 def getMajorityErrorSplit(df):
-    return 0
+    return np.argmin(getTotalMajorityError(df) - np.array(getMajorityErrorOfColumns(df)))
+
+def getTotalMajorityError(df):
+    total_examples = len(df.index)
+    errors = []
+    for value in  (df[df.columns[-1]].unique()):
+        p = len(df[df.iloc[:,-1]==value])/total_examples
+        errors.append(p)
+        
+        
+    return 1-max(errors)
+
+def getMajorityErrorOfColumns(df):
+    
+    # Get the labels
+    labels = (df[df.columns[-1]].unique())
+    MEs = []
+    for i in range(0, len(df.columns)-1): 
+        if len(df[df.columns[i]].unique()) <= 1:
+            MEs.append(0)
+        else:
+            for value in  (df[df.columns[i]].unique()):
+                MEcol = []
+                Sv = df[df.iloc[:,i]==value]
+                for label in labels:
+                    p = len(Sv[Sv.iloc[:,-1]==label])/len(Sv)
+                    MEcol.append(p)
+        
+            MEs.append(1-max(MEcol))
+    return MEs
+
 
 def getGiniIndexSplit(df):
-    return 0
+    #print(getTotalGiniIndex(df), getGiniOfColumns(df),getTotalGiniIndex(df) - np.array(getGiniOfColumns(df)))
+    return np.argmin(getTotalGiniIndex(df) - np.array(getGiniOfColumns(df)))
+
+def getTotalGiniIndex(df):
+    gini_S = 0
+    total_examples = len(df.index)
+    
+    for label in (df[df.columns[-1]].unique()):
+        p = len(df[df.iloc[:,-1]==label])/total_examples
+        gini = p**2 # Square the probability
+        gini_S += gini
+    return 1-gini_S
+
+def getGiniOfColumns(df):
+
+    # Get the labels
+    labels = (df[df.columns[-1]].unique())
+    ginis = []
+    for i in range(0, len(df.columns)-1): 
+        if len(df[df.columns[i]].unique()) <= 1:
+            ginis.append(0)
+        else:
+            for value in  (df[df.columns[i]].unique()):
+                Sv = df[df.iloc[:,i]==value]
+                sum_gini_label = 0
+                for label in labels:
+                    p = len(Sv[Sv.iloc[:,-1]==label])/len(Sv)
+                    
+                    gini = p**2
+                    
+                    sum_gini_label += gini
+        
+            ginis.append((1-sum_gini_label)*len(Sv)/len(df.iloc[:,i]))
+    return ginis
+
 
 def getEntropySplit(df):
     return np.argmin(getTotalEntropy(df) - getEntropyOfColumns(df))
@@ -71,12 +135,12 @@ def getEntropyOfColumns(df):
                     else:
                         entropy = -p * np.log2(p)
                     
-                    sum_entropy_label = sum_entropy_label + entropy * p
+                    sum_entropy_label = sum_entropy_label + entropy * len(Sv)/len(df.iloc[:,i])
         
             entropies.append(sum_entropy_label)
     return entropies
 
-def SplitDataFrameByColumn(df, colToSplitBy):
+def SplitDataFrameByColumn(df, colToSplitBy, untouched_df):
     """
     Splits the dataframe by the given column. Returns smaller data frames and 
     the labels they were split by
@@ -97,7 +161,7 @@ def SplitDataFrameByColumn(df, colToSplitBy):
 
     """
     SplitRegions = []
-    label_values =(df[df.columns[colToSplitBy]].unique())
+    label_values =(untouched_df[untouched_df.columns[df.columns[colToSplitBy]]].unique())
     for value in  label_values:
         Sv = df[df.iloc[:,colToSplitBy]==value]
         Sv = Sv.drop(Sv.columns[colToSplitBy], axis=1) 

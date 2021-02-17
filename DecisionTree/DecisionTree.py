@@ -27,7 +27,7 @@ class DecisionTree:
               The maximum maxDepth the tree will go
           InformationGainMethod : integer
               An integer that selects what type of method will be used to determine information gain
-              0 is Shannon entropy, 1 is Majority Error, 2 is 
+              0 is Shannon entropy, 1 is Majority Error, 2 is gini index
               
           Returns
           -------
@@ -79,10 +79,10 @@ class DecisionTree:
 
         """
         #print("Starting ID3")
-        return self.__ID3(df, maxDepth, 0, InformationGainMethod)
+        return self.__ID3(df, maxDepth, 0, InformationGainMethod, df)
         
     
-    def __ID3(self, df, maxDepth, currDepth,InformationGainMethod):
+    def __ID3(self, df, maxDepth, currDepth,InformationGainMethod, untouched_df):
         """
         Runs the ID3 algorithm to make decision tree
 
@@ -94,6 +94,8 @@ class DecisionTree:
             The maximum depth the tree will make.
         currDepth : int
             The current depth of the node.
+        untouched_df : pandas.DataFrame
+            A data frame that contains all of the original data
 
         Returns
         -------
@@ -111,15 +113,15 @@ class DecisionTree:
         else:
             BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod)
             
-            [SplitDFs, labels] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol)
+            [SplitDFs, labels] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol, untouched_df)
             currNode = Node(str(BestSplitterCol))
             for index in range(0, len(labels)):
                 nodeToAdd = None
-               
+                #print(SplitDFs[index])
                 if len(SplitDFs[index]) == 0:
                     nodeToAdd = Node(TreeHelper.getMostCommonLabel(df))
                 else:
-                    nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod)
+                    nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod, untouched_df)
                     
                 currNode.addBranch(labels[index],nodeToAdd)
                                    
@@ -141,6 +143,7 @@ class DecisionTree:
             The predicted label.
 
         """
+        row = list(row)
         return self.__recursivePrediction(row, self.head)
         
     def __recursivePrediction(self, row, currNode):
@@ -160,12 +163,39 @@ class DecisionTree:
             the predicted label.
 
         """
-        print(currNode.category)
         if(len(currNode.branches) == 0):
             return currNode.category
         else:
             nextIndex = int(currNode.category)
             nextNode = currNode.branches[row[nextIndex]]
             del row[nextIndex]
-            print(row)
+           # print(row)
             return self.__recursivePrediction(row, nextNode)
+        
+    def GetAccuracyLevel(self, filename):
+        """
+        Finds the error rate for a decision tree given test data
+
+        Parameters
+        ----------
+        filename : test
+            Filename of csv containing test data.
+
+        Returns
+        -------
+        Error rate, calculated by finding number of incorrect answers over total predictions.
+
+        """
+        df = self.__processCSV(filename)
+        count = 0
+        incorrect = 0
+        for i in range(0, len(df)):
+            count +=1
+            if self.Predict(df.iloc[i,:]) != df.iloc[i,-1]:
+                incorrect+=1
+            
+        return incorrect/count
+            
+            
+        
+        
