@@ -24,6 +24,22 @@ def getMostCommonLabel(df):
         return df[df.columns[-1]].mode().iloc[0]
     
 def findBestSplit(df, splitMethod):
+    """
+    Finds the column that provides the most information about the label
+
+    Parameters
+    ----------
+    df : pandas.dataframe
+        The data frame that is going to be split.
+    splitMethod : int
+        Selection for split method, 1 is Majority error, 2 is gini, all other numbers are Entropy.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     if splitMethod == 1:
         return getMajorityErrorSplit(df)
     elif splitMethod == 2:
@@ -33,9 +49,37 @@ def findBestSplit(df, splitMethod):
     
     
 def getMajorityErrorSplit(df):
+    """
+    Gets the column to split using Majority Error
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataframe to split.
+
+    Returns
+    -------
+    int
+        The index of the column that is the best split.
+
+    """
     return np.argmin(getTotalMajorityError(df) - np.array(getMajorityErrorOfColumns(df)))
 
 def getTotalMajorityError(df):
+    """
+    Gets the Majority error for the entire dataset
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataframe to find the Majority Error.
+
+    Returns
+    -------
+    float
+        The majority error of the dataset.
+
+    """
     total_examples = len(df.index)
     errors = []
     for value in  (df[df.columns[-1]].unique()):
@@ -46,7 +90,21 @@ def getTotalMajorityError(df):
     return 1-max(errors)
 
 def getMajorityErrorOfColumns(df):
-    
+    """
+    Gets the weighted majority error of each column
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe being split.
+
+    Returns
+    -------
+    MEs : List of floats
+        The weighted list of Majority Errors in the same order as the columns
+        in df.
+
+    """
     # Get the labels
     labels = (df[df.columns[-1]].unique())
     MEs = []
@@ -66,10 +124,38 @@ def getMajorityErrorOfColumns(df):
 
 
 def getGiniIndexSplit(df):
+    """
+    Get column index of split using Gini Index
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The data being split.
+
+    Returns
+    -------
+    int
+        The column index of the best split.
+
+    """
     #print(getTotalGiniIndex(df), getGiniOfColumns(df),getTotalGiniIndex(df) - np.array(getGiniOfColumns(df)))
     return np.argmin(getTotalGiniIndex(df) - np.array(getGiniOfColumns(df)))
 
 def getTotalGiniIndex(df):
+    """
+    Gets the total gini index for the labels of the dataset
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The data set.
+
+    Returns
+    -------
+    float
+        The gini index of the dataset labels.
+
+    """
     gini_S = 0
     total_examples = len(df.index)
     
@@ -80,7 +166,20 @@ def getTotalGiniIndex(df):
     return 1-gini_S
 
 def getGiniOfColumns(df):
+    """
+    Gets the weighted gini index for each column
 
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The Dataset.
+
+    Returns
+    -------
+    ginis : list of floats
+        The gini indices of each column as they appear in the dataset.
+
+    """
     # Get the labels
     labels = (df[df.columns[-1]].unique())
     ginis = []
@@ -103,9 +202,37 @@ def getGiniOfColumns(df):
 
 
 def getEntropySplit(df):
+    """
+    Finds the best column to split based on entropy
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataset.
+
+    Returns
+    -------
+    int
+        The index of the best column to split.
+
+    """
     return np.argmin(getTotalEntropy(df) - getEntropyOfColumns(df))
 
 def getTotalEntropy(df):
+    """
+    Gets the entropy of the dataset
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The data set
+
+    Returns
+    -------
+    entropy_S : float
+        The entropy of the data set.
+
+    """
     entropy_S = 0
     total_examples = len(df.index)
     
@@ -116,7 +243,21 @@ def getTotalEntropy(df):
     return entropy_S
 
 def getEntropyOfColumns(df):
-    
+    """
+    Gets the weighted entropy of each column
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataset.
+
+    Returns
+    -------
+    entropies : list of floats
+        The weighted entropy of each column in the order they appear 
+        in the dataset.
+
+    """
     # Get the labels
     labels = (df[df.columns[-1]].unique())
     entropies = []
