@@ -14,7 +14,7 @@ import TreeHelper
 class DecisionTree:
       
       
-    def __init__(self, filename, maxDepth, InformationGainMethod):
+    def __init__(self, filename, maxDepth, InformationGainMethod, MakeUnknownCommon=False):
           """
           Initializes a decision tree
     
@@ -28,6 +28,8 @@ class DecisionTree:
           InformationGainMethod : integer
               An integer that selects what type of method will be used to determine information gain
               0 is Shannon entropy, 1 is Majority Error, 2 is gini index
+          MakeUnknownCommon : bool
+              If true will make unknowns the most common label in the column
               
           Returns
           -------
@@ -38,13 +40,13 @@ class DecisionTree:
               raise ValueError("InformationGainMethod must be 0, 1, or 2")
               
               
-          df = self.__processCSV(filename)
+          df = self.__processCSV(filename, MakeUnknownCommon)
           #print("CSV Processed")
           self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
       
-    def __processCSV(self, filename):
+    def __processCSV(self, filename, MakeUnknownCommon):
         """
         Process the CSV from a given filename into a dataframe used by the decision tree.
         Will process the data into a form that the decision tree can use
@@ -62,6 +64,20 @@ class DecisionTree:
         dirname = os.path.dirname(__file__)
         filename = os.path.join(dirname, filename)
         df = pd.read_csv(filename, header=None)
+        
+        # Check if each column is all numeric
+        for colInd in range(0,len(df.columns)):
+            # if the column is numeric, split into below and above median as a boolean
+            if pd.to_numeric(df[colInd], errors='coerce').notnull().all():
+                #print(colInd, "is all numeric")
+                df[colInd] = (df[colInd] <= df[colInd].median())
+                
+        if MakeUnknownCommon:
+            for colInd in range(0,len(df.columns)):
+                mode = df[(df[colInd] != 'unknown')][colInd].mode()[0] # make sure not to count unknown when finding most common value
+                df.loc[df[colInd]=='unknown', colInd] = 'failure'
+            
+                
         return df;
     
     def __buildTree(self, df, maxDepth, InformationGainMethod):
