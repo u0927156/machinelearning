@@ -5,6 +5,7 @@ Created on Mon Feb  8 06:54:47 2021
 @author: Spencer Peterson
 """
 
+
 class Node:
     """
     This is a class used to represent a Node in a decision tree

@@ -16,7 +16,7 @@ class DecisionTree:
       
     def __init__(self, filename, maxDepth, InformationGainMethod):
           """
-          
+          Initializes a decision tree
     
           Parameters
           ----------
@@ -84,21 +84,21 @@ class DecisionTree:
     
     def __ID3(self, df, maxDepth, currDepth,InformationGainMethod):
         """
-        
+        Runs the ID3 algorithm to make decision tree
 
         Parameters
         ----------
-        df : TYPE
-            DESCRIPTION.
-        maxDepth : TYPE
-            DESCRIPTION.
-        currDepth : TYPE
-            DESCRIPTION.
+        df : pandas.DataFrame
+            The subset of data used to build the current Depth.
+        maxDepth : int
+            The maximum depth the tree will make.
+        currDepth : int
+            The current depth of the node.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        Node
+            The labeled node for the next step of the decision tree.
 
         """
         #print("On level ", currDepth, "of", maxDepth)
@@ -127,11 +127,39 @@ class DecisionTree:
             return currNode
 
     def Predict(self, row):
-        print("Starting Recursion")
-        row = list(row)
+        """
+        Predicts a label based on a row of data
+
+        Parameters
+        ----------
+        row : dataframe row
+            The row of data that will be predicted.
+
+        Returns
+        -------
+        string
+            The predicted label.
+
+        """
         return self.__recursivePrediction(row, self.head)
         
     def __recursivePrediction(self, row, currNode):
+        """
+        The method used to find the decision tree's predictions
+
+        Parameters
+        ----------
+        row : dataframe row
+            The row with data that has not been checked yet.
+        currNode : Node
+            The current node being examined.
+
+        Returns
+        -------
+        TYPE
+            the predicted label.
+
+        """
         print(currNode.category)
         if(len(currNode.branches) == 0):
             return currNode.category
