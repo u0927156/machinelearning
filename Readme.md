@@ -1,1 +1,1 @@
-This is a machine learning library developed by Your Name for CS5350/6350 in University of Utah.
+This is a machine learning library developed by Spencer Peterson for CS5350/6350 in University of Utah.
