@@ -39,14 +39,14 @@ class DecisionTree:
           if InformationGainMethod not in range(0,3):
               raise ValueError("InformationGainMethod must be 0, 1, or 2")
               
-              
-          df = self.__processCSV(filename, MakeUnknownCommon)
+          self.MakeUnknownCommon = MakeUnknownCommon
+          df = self.__processCSV(filename)
           #print("CSV Processed")
           self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
       
-    def __processCSV(self, filename, MakeUnknownCommon):
+    def __processCSV(self, filename):
         """
         Process the CSV from a given filename into a dataframe used by the decision tree.
         Will process the data into a form that the decision tree can use
@@ -71,9 +71,10 @@ class DecisionTree:
             if pd.to_numeric(df[colInd], errors='coerce').notnull().all():
                 #print(colInd, "is all numeric")
                 df[colInd] = (df[colInd] <= df[colInd].median())
-                
-        if MakeUnknownCommon:
-            for colInd in range(0,len(df.columns)):
+
+        # Change unknowns to most common value in column                
+        if self.MakeUnknownCommon:            
+            for colInd in range(0,len(df.columns)):                
                 mode = df[(df[colInd] != 'unknown')][colInd].mode()[0] # make sure not to count unknown when finding most common value
                 df.loc[df[colInd]=='unknown', colInd] = 'failure'
             

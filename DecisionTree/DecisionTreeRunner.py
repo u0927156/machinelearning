@@ -22,12 +22,12 @@ testData =  'car/test.csv'
 
 
 
-def PrintTable(train, test, rangeEnd):
+def PrintTable(train, test, rangeEnd, ChangeUnknown=False):
     print('\t\t\tEntropy\t\tME\t\tGini')
     for maxDepth in range(1,rangeEnd+1):
-        EntropyTree = DecisionTree(train, maxDepth, 0)
-        METree = DecisionTree(train, maxDepth, 1)
-        GiniTree = DecisionTree(train, maxDepth, 2)
+        EntropyTree = DecisionTree(train, maxDepth, 0,ChangeUnknown)
+        METree = DecisionTree(train, maxDepth, 1,ChangeUnknown)
+        GiniTree = DecisionTree(train, maxDepth, 2,ChangeUnknown)
         print("%2d & %5.4f & %5.4f & %5.4f \\\\ \\hline" % (maxDepth, EntropyTree.GetAccuracyLevel(test),METree.GetAccuracyLevel(test),GiniTree.GetAccuracyLevel(test)))
 
 print('Test on Training Data')
@@ -44,6 +44,12 @@ PrintTable(bankTrainingData, bankTrainingData, 16)
 
 # %%
 print('Bank Test on Testing Data, count Unknown as Value')
-PrintTable(bankTrainingData, bankTestingData, 16 
+PrintTable(bankTrainingData, bankTestingData, 16)
 
 # %%
+
+print('Bank Test on Training Data, Change Unknown to Mode\n')
+PrintTable(bankTrainingData, bankTrainingData, 16, True)
+
+print('Bank Test on Testing Data, change Unknown to Mode')
+PrintTable(bankTrainingData, bankTestingData, 16, True)
