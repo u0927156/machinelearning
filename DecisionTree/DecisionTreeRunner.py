@@ -19,10 +19,19 @@ FirstTree = DecisionTree(trainingData, 1, 0)
 
 testData =  'car/test.csv'
 
-print('\t\t\tEntropy\t\tME\t\tGini')
-for maxDepth in range(1,7):
-    EntropyTree = DecisionTree(trainingData, maxDepth, 0)
-    METree = DecisionTree(trainingData, maxDepth, 1)
-    GiniTree = DecisionTree(trainingData, maxDepth, 2)
-    print("maxDepth=%02d, %6.5f, %6.5f, %6.5f" % (maxDepth, EntropyTree.GetAccuracyLevel(testData),METree.GetAccuracyLevel(testData),GiniTree.GetAccuracyLevel(testData)))
 
+
+
+def PrintTable(train, test):
+    print('\t\t\tEntropy\t\tME\t\tGini')
+    for maxDepth in range(1,7):
+        EntropyTree = DecisionTree(train, maxDepth, 0)
+        METree = DecisionTree(train, maxDepth, 1)
+        GiniTree = DecisionTree(train, maxDepth, 2)
+        print("maxDepth=%02d, %6.5f, %6.5f, %6.5f" % (maxDepth, EntropyTree.GetAccuracyLevel(test),METree.GetAccuracyLevel(test),GiniTree.GetAccuracyLevel(test)))
+
+print('Test on Training Data')
+PrintTable(trainingData, trainingData)
+print('\n')
+print('Test on Testing Data')
+PrintTable(trainingData, testData)
