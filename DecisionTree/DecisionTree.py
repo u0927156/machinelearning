@@ -14,7 +14,18 @@ import TreeHelper
 class DecisionTree:
       
       
-    def __init__(self, filename, maxDepth, InformationGainMethod, MakeUnknownCommon=False):
+    def __init__(self):
+          """
+          Constructs an empty decision tree
+
+          Returns
+          -------
+          None.
+
+          """
+          self.head = None
+          
+    def BuildFromFile(self, filename, maxDepth, InformationGainMethod, MakeUnknownCommon=False):
           """
           Initializes a decision tree
     
@@ -45,7 +56,39 @@ class DecisionTree:
           self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
-      
+    def BuildFromDataFrame(self, df, maxDepth, InformationGainMethod, Weights, MakeUnknownCommon=False):
+        """
+        Initializes a decision tree with example weights. 
+
+        Parameters
+        ----------
+        df : pandas.Dataframe
+            The data used to make the decision trees.
+        maxDepth : int
+            The maximum depth of the tree.
+        InformationGainMethod : integer
+            DESCRIPTION.
+        Weights : TYPE
+            An integer that selects what type of method will be used to determine information gain
+              0 is Shannon entropy, 1 is Majority Error, 2 is gini index.
+        MakeUnknownCommon : bool, optional
+            Makes the unknown values the median. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
+        if InformationGainMethod not in range(0,3):
+              raise ValueError("InformationGainMethod must be 0, 1, or 2")
+              
+        self.MakeUnknownCommon = MakeUnknownCommon
+  
+        self.__processDataFrame(df)
+        #print("CSV Processed")
+        self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
+          
+        
     def __processCSV(self, filename):
         """
         Process the CSV from a given filename into a dataframe used by the decision tree.
@@ -65,7 +108,27 @@ class DecisionTree:
         filename = os.path.join(dirname, filename)
         df = pd.read_csv(filename, header=None)
         
-        # Check if each column is all numeric
+        self.__processDataFrame(df)
+   
+            
+                
+        return df;
+    
+    def __processDataFrame(self, df):
+        """
+        Process numeric values and unknown values
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The decision tree data.
+
+        Returns
+        -------
+        None.
+
+        """
+             # Check if each column is all numeric
         for colInd in range(0,len(df.columns)):
             # if the column is numeric, split into below and above median as a boolean
             if pd.to_numeric(df[colInd], errors='coerce').notnull().all():
@@ -77,11 +140,8 @@ class DecisionTree:
             for colInd in range(0,len(df.columns)):                
                 mode = df[(df[colInd] != 'unknown')][colInd].mode()[0] # make sure not to count unknown when finding most common value
                 df.loc[df[colInd]=='unknown', colInd] = 'failure'
-            
-                
-        return df;
     
-    def __buildTree(self, df, maxDepth, InformationGainMethod):
+    def __buildTree(self, df, maxDepth, InformationGainMethod, weights=None):
         """
         Driver method for building the decision tree using the ID3 algorithm
 
@@ -96,10 +156,10 @@ class DecisionTree:
 
         """
         #print("Starting ID3")
-        return self.__ID3(df, maxDepth, 0, InformationGainMethod, df)
+        return self.__ID3(df, maxDepth, 0, InformationGainMethod, df, weights)
         
     
-    def __ID3(self, df, maxDepth, currDepth,InformationGainMethod, untouched_df):
+    def __ID3(self, df, maxDepth, currDepth,InformationGainMethod, untouched_df, weights):
         """
         Runs the ID3 algorithm to make decision tree
 
@@ -128,9 +188,10 @@ class DecisionTree:
             
         
         else:
-            BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod)
+            BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod, weights)
             
-            [SplitDFs, labels] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol, untouched_df)
+            [SplitDFs, labels, Split_Weights] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol, untouched_df, weights)
+            
             currNode = Node(str(BestSplitterCol))
             for index in range(0, len(labels)):
                 nodeToAdd = None
@@ -138,7 +199,7 @@ class DecisionTree:
                 if len(SplitDFs[index]) == 0:
                     nodeToAdd = Node(TreeHelper.getMostCommonLabel(df))
                 else:
-                    nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod, untouched_df)
+                    nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod, untouched_df, Split_Weights[index])
                     
                 currNode.addBranch(labels[index],nodeToAdd)
                                    
@@ -160,6 +221,8 @@ class DecisionTree:
             The predicted label.
 
         """
+        if self.head is None:
+            raise AttributeError("Tree has not been constructed")
         row = list(row)
         return self.__recursivePrediction(row, self.head)
         
@@ -203,6 +266,9 @@ class DecisionTree:
         Error rate, calculated by finding number of incorrect answers over total predictions.
 
         """
+        if self.head is None:
+            raise AttributeError("Tree has not been constructed")
+            
         df = self.__processCSV(filename)
         count = 0
         incorrect = 0

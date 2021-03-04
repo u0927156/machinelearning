@@ -30,7 +30,7 @@ for i in range(14):
 Y = df.iloc[:,-1]
 X = df.iloc[:,0:14]
 
-decForest = RandomForestClassifier(max_depth=4, n_estimators=200)
+decForest = RandomForestClassifier(max_depth=6, n_estimators=150)
 decForest = decForest.fit(X,Y)
 
 testDF = pd.read_csv(test)
