@@ -67,7 +67,8 @@ class DecisionTree:
         maxDepth : int
             The maximum depth of the tree.
         InformationGainMethod : integer
-            DESCRIPTION.
+                          An integer that selects what type of method will be used to determine information gain
+              0 is Shannon entropy, 1 is Majority Error, 2 is gini index.
         Weights : TYPE
             An integer that selects what type of method will be used to determine information gain
               0 is Shannon entropy, 1 is Majority Error, 2 is gini index.
