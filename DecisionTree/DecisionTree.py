@@ -132,15 +132,16 @@ class DecisionTree:
              # Check if each column is all numeric
         for colInd in range(0,len(df.columns)):
             # if the column is numeric, split into below and above median as a boolean
-            if pd.to_numeric(df[colInd], errors='coerce').notnull().all():
+
+            if pd.to_numeric(df.iloc[:,colInd], errors='coerce').notnull().all():
                 #print(colInd, "is all numeric")
-                df[colInd] = (df[colInd] <= df[colInd].median())
+                df.iloc[:,colInd] = (df.iloc[:,colInd] <= df.iloc[:,colInd].median())
 
         # Change unknowns to most common value in column                
         if self.MakeUnknownCommon:            
             for colInd in range(0,len(df.columns)):                
-                mode = df[(df[colInd] != 'unknown')][colInd].mode()[0] # make sure not to count unknown when finding most common value
-                df.loc[df[colInd]=='unknown', colInd] = 'failure'
+                mode = df[(df[df.columns[colInd]] != 'unknown')].iloc[:,colInd].mode()[0] # make sure not to count unknown when finding most common value
+                df.loc[df[df.columns[colInd]]=='unknown', colInd] = mode
     
     def __buildTree(self, df, maxDepth, InformationGainMethod, weights=None):
         """
@@ -225,6 +226,8 @@ class DecisionTree:
         if self.head is None:
             raise AttributeError("Tree has not been constructed")
         row = list(row)
+        
+        print(row)
         return self.__recursivePrediction(row, self.head)
         
     def __recursivePrediction(self, row, currNode):

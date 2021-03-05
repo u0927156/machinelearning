@@ -6,6 +6,7 @@ Created on Mon Feb  8 11:02:50 2021
 @author: Spencer Peterson
 """
 import numpy as np
+import pandas as pd
 
 def getMostCommonLabel(df):
         """
@@ -405,3 +406,19 @@ def SplitDataFrameByColumn(df, colToSplitBy, untouched_df, weights):
             Split_Weights.append(None)
         SplitRegions.append(Sv)
     return SplitRegions, label_values, Split_Weights
+
+def ProcessDataFrame(df, MakeUnknownCommon=False):
+         # Check if each column is all numeric
+    for colInd in range(0,len(df.columns)):
+        # if the column is numeric, split into below and above median as a boolean
+
+        if pd.to_numeric(df.iloc[:,colInd], errors='coerce').notnull().all():
+            #print(colInd, "is all numeric")
+            df.iloc[:,colInd] = (df.iloc[:,colInd] <= df.iloc[:,colInd].median())
+
+    # Change unknowns to most common value in column                
+    if MakeUnknownCommon:            
+        for colInd in range(0,len(df.columns)):                
+            mode = df[(df[df.columns[colInd]] != 'unknown')].iloc[:,colInd].mode()[0] # make sure not to count unknown when finding most common value
+            df.loc[df[df.columns[colInd]]=='unknown', colInd] = mode
+    
