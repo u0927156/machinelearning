@@ -227,7 +227,7 @@ class DecisionTree:
             raise AttributeError("Tree has not been constructed")
         row = list(row)
         
-        print(row)
+        
         return self.__recursivePrediction(row, self.head)
         
     def __recursivePrediction(self, row, currNode):

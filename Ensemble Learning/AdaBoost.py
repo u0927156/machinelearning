@@ -35,6 +35,10 @@ class AdaBoostTree:
             self.__AddNewTree()
             
             
+    def AppendTree(self):
+        self.__AddNewTree()
+        
+        
     def __AddNewTree(self):
         df = self.df
         currTree = DecisionTree()
@@ -105,6 +109,7 @@ class AdaBoostTree:
 
         predWeight = -10000
         
+        print(predictions)
         PredictionToReturn = ''
         for key in predictions:
             if predictions[key] > predWeight:
