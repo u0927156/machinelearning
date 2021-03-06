@@ -8,7 +8,7 @@ Created on Mon Feb  8 11:02:50 2021
 import numpy as np
 import pandas as pd
 
-def getMostCommonLabel(df):
+def getMostCommonLabel(df, weights=None):
         """
         Gets the most common label from a data frame. Labels are considered the last column in a dataframe
 
@@ -22,8 +22,29 @@ def getMostCommonLabel(df):
         The most common label as a string.
 
         """
-        return df[df.columns[-1]].mode().iloc[0]
-    
+        if weights is None:
+            return df[df.columns[-1]].mode().iloc[0]
+        else:
+            labels = {}
+            for i in range(0,len(weights)):
+                label = df[df.columns[-1]].iloc[i]
+                if label in labels:
+                    labels[label] += weights[i]
+                else:
+                    labels[label] = weights[i]
+                
+            labelWeight = -10000
+        
+        
+            LabelToReturn = ''
+            for key in labels:
+                if labels[key] > labelWeight:
+                    labelWeight = labels[key]
+                    LabelToReturn = key
+                    
+            return LabelToReturn
+        
+        
 def findBestSplit(df, splitMethod, weights):
     """
     Finds the column that provides the most information about the label

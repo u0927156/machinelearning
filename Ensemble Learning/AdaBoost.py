@@ -19,11 +19,14 @@ from DecisionTree import DecisionTree
 
 class AdaBoostTree:
     
-    def __init__(self):
+    def __init__(self, HandleUnknowns = False):
         self.trees = []
         self.alphas = []
         self.D = None;
         self.df = None
+        self.HandleUnknowns = HandleUnknowns
+        
+        
     def BuildAdaBoost(self, filename, T):
         df = pd.read_csv(filename, header=None)
         
@@ -42,19 +45,22 @@ class AdaBoostTree:
     def __AddNewTree(self):
         df = self.df
         currTree = DecisionTree()
-        currTree.BuildFromDataFrame(df, 1, 2, self.D, True)
+        currTree.BuildFromDataFrame(df, 1, 2, self.D, self.HandleUnknowns)
         
         
         
         predictions = self.__GetPredictions(df, currTree)
         error = self.__CalculateTreeError(df, predictions)
 
-        print(error)
+#        print(error)
+
         alpha = self.__CalculateAlpha(error)
         self.alphas.append(alpha)
         
+ #       print(self.D)
         self.__UpdateD(df, predictions, alpha)
         
+  #      print(self.D)
 
         self.trees.append(currTree)
         
@@ -77,6 +83,8 @@ class AdaBoostTree:
 
 
     def __CalculateAlpha(self, error):
+        if error > 0.5:
+            error = 0.499        
         return 1/2 * np.log((1-error)/error)
     
     
@@ -109,7 +117,7 @@ class AdaBoostTree:
 
         predWeight = -10000
         
-        print(predictions)
+        
         PredictionToReturn = ''
         for key in predictions:
             if predictions[key] > predWeight:
@@ -120,6 +128,18 @@ class AdaBoostTree:
             
                 
             
+    def GetAccuracyLevel(self, df):
+        if len(self.trees) == 0:
+            raise AttributeError("No trees have been constructed")
+            
+        count = 0
+        incorrect = 0
+        for i in range(0, len(df)):
+            count +=1
+            if self.Predict(df.iloc[i,:]) != df.iloc[i,-1]:
+                incorrect+=1
+            
+        return incorrect/count
         
             
         

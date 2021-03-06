@@ -87,7 +87,7 @@ class DecisionTree:
   
         self.__processDataFrame(df)
         #print("CSV Processed")
-        self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
+        self.head = self.__buildTree(df, maxDepth, InformationGainMethod, Weights)
           
         
     def __processCSV(self, filename):
@@ -186,7 +186,7 @@ class DecisionTree:
         #print(df)
         if currDepth >= maxDepth or len(df.columns) == 1 or len(df[df.columns[-1]].unique()) <= 1:
             #print("Exiting")
-            return Node(TreeHelper.getMostCommonLabel(df))
+            return Node(TreeHelper.getMostCommonLabel(df, weights))
             
         
         else:
@@ -199,8 +199,9 @@ class DecisionTree:
                 nodeToAdd = None
                 #print(SplitDFs[index])
                 if len(SplitDFs[index]) == 0:
-                    nodeToAdd = Node(TreeHelper.getMostCommonLabel(df))
+                    nodeToAdd = Node(TreeHelper.getMostCommonLabel(df, weights))
                 else:
+                    #print(Split_Weights[index])
                     nodeToAdd = self.__ID3(SplitDFs[index], maxDepth, currDepth+1,InformationGainMethod, untouched_df, Split_Weights[index])
                     
                 currNode.addBranch(labels[index],nodeToAdd)
