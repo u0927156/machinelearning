@@ -56,7 +56,8 @@ class DecisionTree:
           self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
-    def BuildFromDataFrame(self, df, maxDepth, InformationGainMethod, Weights, MakeUnknownCommon=False):
+    def BuildFromDataFrame(self, df, maxDepth, InformationGainMethod, Weights, 
+                           MakeUnknownCommon=False, FullDF = None):
         """
         Initializes a decision tree with example weights. 
 
@@ -87,7 +88,7 @@ class DecisionTree:
   
         self.__processDataFrame(df)
         #print("CSV Processed")
-        self.head = self.__buildTree(df, maxDepth, InformationGainMethod, Weights)
+        self.head = self.__buildTree(df, maxDepth, InformationGainMethod, Weights, FullDF)
           
         
     def __processCSV(self, filename):
@@ -143,7 +144,8 @@ class DecisionTree:
                 mode = df[(df[df.columns[colInd]] != 'unknown')].iloc[:,colInd].mode()[0] # make sure not to count unknown when finding most common value
                 df.loc[df[df.columns[colInd]]=='unknown', colInd] = mode
     
-    def __buildTree(self, df, maxDepth, InformationGainMethod, weights=None):
+    def __buildTree(self, df, maxDepth, InformationGainMethod, 
+                    weights=None, Full_DF = None):
         """
         Driver method for building the decision tree using the ID3 algorithm
 
@@ -157,8 +159,11 @@ class DecisionTree:
         The head node of the decision tree. 
 
         """
+        untouched_df = df
+        if Full_DF is not None:
+            untouched_df = Full_DF # provides all possible labels for bagging.
         #print("Starting ID3")
-        return self.__ID3(df, maxDepth, 0, InformationGainMethod, df, weights)
+        return self.__ID3(df, maxDepth, 0, InformationGainMethod, untouched_df, weights)
         
     
     def __ID3(self, df, maxDepth, currDepth,InformationGainMethod, untouched_df, weights):

@@ -17,10 +17,11 @@ from DecisionTree import DecisionTree
 
 class BaggedTree:
     
-    def __init__(self, df, HandleUnknowns=False):
+    def __init__(self, df, HandleUnknowns=False, CompleteDataSet=None):
         self.__HandleUnknowns = HandleUnknowns
         self.df = df
         self.trees = []
+        self.CompleteDataSet = CompleteDataSet
         
     def BuildNTrees(self, n):
         for i in range(0,n):
@@ -29,13 +30,18 @@ class BaggedTree:
     def __AppendTree(self):
         num_rows = self.df.shape[0]
         
-        bootstraps = np.random.randing(0,num_rows, num_rows); # get random rows with replacement
+        bootstraps = np.random.randint(0,num_rows, num_rows); # get random rows with replacement
         
-        df_boot = self.df.iloc[:, bootstraps] # actually get the 
+        
+        df_boot = self.df.iloc[bootstraps,:] # actually get the rows
         
         currTree = DecisionTree()
         
-        currTree.BuildFromDataFrame(df_boot, num_rows, 2, None, self.__HandleUnkowns)
+        CompleteDataSet = self.df
+        if self.CompleteDataSet is not None:
+            CompleteDataSet = self.CompleteDataSet
+            
+        currTree.BuildFromDataFrame(df_boot, num_rows, 2, None, self.__HandleUnknowns, CompleteDataSet)
         
         self.trees.append(currTree)
         
@@ -68,6 +74,18 @@ class BaggedTree:
                 
         return PredictionToReturn
         
+    def GetAccuracyLevel(self, df):
+        if len(self.trees) == 0:
+            raise AttributeError("No trees have been constructed")
+            
+        count = 0
+        incorrect = 0
+        for i in range(0, len(df)):
+            count +=1
+            if self.Predict(df.iloc[i,:]) != df.iloc[i,-1]:
+                incorrect+=1
+            
+        return incorrect/count
         
         
         
