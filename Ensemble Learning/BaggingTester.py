@@ -234,7 +234,7 @@ for bag_ind in range(len(ListOfBags)):
 
 bias = sum(biases)/len(biases)
 variance = sum(Variances)/len(Variances)
-print('The Bias was %4.3f The variance was %4.3f. The general squared error war %4.3f' %(bias, variance, bias+variance))
+print('The Bias was %4.3f The variance was %4.3f. The general squared error was %4.3f' %(bias, variance, bias+variance))
 
 
 
