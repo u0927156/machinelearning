@@ -127,8 +127,8 @@ plt.show()
 
 import random
 
-num_bag = 50
-num_trees = 50
+num_bag = 40
+num_trees = 40
 
 ListOfBags = []
 for bag in range(num_bag):
@@ -141,9 +141,101 @@ for bag in range(num_bag):
     CurrBag.BuildNTrees(num_trees)
     
     ListOfBags.append(CurrBag)
-# %%
+
 import dill
 
 filename = ('VarianceSession.pkl')
 
 dill.dump_session(filename)
+print('saved')
+# %% 
+import dill
+
+filename = ('VarianceSession.pkl')
+
+dill.load_session(filename)
+
+# %% 
+import dill
+
+# copied file to different locatio to prevent overwriting
+load_file_name = 'D:\\School\\Spring 2021\\CS 6350\\Homework\\HW2\\VarianceSession.pkl' 
+
+dill.load_session(load_file_name)
+
+# %% Bias and Variance of Each Tree
+
+# Get all of the individual trees
+Trees = []
+for Bag in ListOfBags:
+    Trees.append(Bag.trees[0])
+    
+# calculate biases
+biases = []
+predictions = np.zeros([num_trees, test_df.shape[0]])
+for i in range(0, test_df.shape[0]):
+    if i % 1000 == 0:
+        print(i)
+    sum_for_example = 0
+    for Tree_ind in range(len(Trees)):
+        Tree = Trees[Tree_ind]
+        if Tree.Predict(test_df.iloc[i,:]) == 'no':
+            sum_for_example += 0
+            predictions[Tree_ind, i] = 0
+        else:
+            sum_for_example += 1
+            predictions[Tree_ind, i] = 1
+            
+    correct_answer = 0
+    if (test_df.iloc[i,-1]=='yes'):
+        correct_answer = 1
+    biases.append(np.square((sum_for_example/num_trees) - correct_answer))
+    
+Variances = []
+for Tree_ind in range(len(Trees)):
+    samples = predictions[Tree_ind,:]
+    mean_samples = sum(samples)/len(samples)
+    variance = 1/(len(samples-1)) * sum(np.square(predictions[0,:] - np.mean(predictions[0,:])))
+    Variances.append(variance)
+
+bias = sum(biases)/len(biases)
+variance = sum(Variances)/len(Variances)
+print('The Bias was %4.3f The variance was %4.3f. The general squared error war %4.3f' %(bias, variance, bias+variance))
+
+# %% Bias and Variance of Each Bagging Method
+  
+# calculate biases
+biases = []
+predictions = np.zeros([num_bag, test_df.shape[0]])
+for i in range(0, test_df.shape[0]):
+    if i % 1000 == 0:
+        print(i)
+    sum_for_example = 0
+    for bag_ind in range(len(ListOfBags)):
+        Bag = ListOfBags[bag_ind]
+        if Bag.Predict(test_df.iloc[i,:]) == 'no':
+            sum_for_example += 0
+            predictions[bag_ind, i] = 0
+        else:
+            sum_for_example += 1
+            predictions[bag_ind, i] = 1
+            
+    correct_answer = 0
+    if (test_df.iloc[i,-1]=='yes'):
+        correct_answer = 1
+    biases.append(np.square((sum_for_example/num_bag) - correct_answer))
+    
+Variances = []
+for bag_ind in range(len(ListOfBags)):
+    samples = predictions[bag_ind,:]
+    mean_samples = sum(samples)/len(samples)
+    variance = 1/(len(samples-1)) * sum(np.square(predictions[0,:] - np.mean(predictions[0,:])))
+    Variances.append(variance)
+
+bias = sum(biases)/len(biases)
+variance = sum(Variances)/len(Variances)
+print('The Bias was %4.3f The variance was %4.3f. The general squared error war %4.3f' %(bias, variance, bias+variance))
+
+
+
+# %% 
