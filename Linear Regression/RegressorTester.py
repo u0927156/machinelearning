@@ -90,3 +90,8 @@ Actual = np.array(test_df.iloc[:,-1])
 CostOfTest = 1/2 * sum(np.square(Predictions-Actual))
 
 print('The cost function with test data is:',CostOfTest)
+
+# %% Analytical Solution
+step1 = np.linalg.inv(np.dot(X_prime.T, X_prime))
+step2 = np.dot(step1,X_prime.T)
+analytical_solution = np.dot(step2, y.T)

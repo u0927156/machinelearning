@@ -7,7 +7,7 @@ Created on Mon Feb  8 11:02:50 2021
 """
 import numpy as np
 import pandas as pd
-
+import random
 def getMostCommonLabel(df, weights=None):
         """
         Gets the most common label from a data frame. Labels are considered the last column in a dataframe
@@ -45,7 +45,7 @@ def getMostCommonLabel(df, weights=None):
             return LabelToReturn
         
         
-def findBestSplit(df, splitMethod, weights):
+def findBestSplit(df, splitMethod, weights, RandomAttributes):
     """
     Finds the column that provides the most information about the label
 
@@ -63,14 +63,14 @@ def findBestSplit(df, splitMethod, weights):
 
     """
     if splitMethod == 1:
-        return getMajorityErrorSplit(df, weights)
+        return getMajorityErrorSplit(df, weights, RandomAttributes)
     elif splitMethod == 2:
-        return getGiniIndexSplit(df, weights)
+        return getGiniIndexSplit(df, weights, RandomAttributes)
     else:
-        return getEntropySplit(df, weights)
+        return getEntropySplit(df, weights, RandomAttributes)
     
     
-def getMajorityErrorSplit(df, weights):
+def getMajorityErrorSplit(df, weights, RandomAttributes):
     """
     Gets the column to split using Majority Error
 
@@ -85,7 +85,7 @@ def getMajorityErrorSplit(df, weights):
         The index of the column that is the best split.
 
     """
-    return np.argmin(getTotalMajorityError(df, weights) - np.array(getMajorityErrorOfColumns(df, weights)))
+    return np.argmax(getTotalMajorityError(df, weights) - np.array(getMajorityErrorOfColumns(df, weights, RandomAttributes)))
 
 def getTotalMajorityError(df, weights):
     """
@@ -116,9 +116,10 @@ def getTotalMajorityError(df, weights):
             errors.append(p)
     
         
+    
     return 1-max(errors)
 
-def getMajorityErrorOfColumns(df, weights):
+def getMajorityErrorOfColumns(df, weights, RandomAttributes):
     """
     Gets the weighted majority error of each column
 
@@ -166,10 +167,17 @@ def getMajorityErrorOfColumns(df, weights):
                         MEcol.append(p)
             
                 MEs.append(1-max(MEcol))
+    
+    if RandomAttributes is not None:
+        NumToIgnore = len(MEs) - RandomAttributes
+        if NumToIgnore > 0:
+            for ind in random.sample(range(len(MEs), k=NumToIgnore)):
+                MEs[ind] = 1
+        
     return MEs
 
 
-def getGiniIndexSplit(df, weights):
+def getGiniIndexSplit(df, weights, RandomAttributes):
     """
     Get column index of split using Gini Index
 
@@ -185,7 +193,7 @@ def getGiniIndexSplit(df, weights):
 
     """
     #print(getTotalGiniIndex(df), getGiniOfColumns(df),getTotalGiniIndex(df) - np.array(getGiniOfColumns(df)))
-    return np.argmin(getTotalGiniIndex(df, weights) - np.array(getGiniOfColumns(df, weights)))
+    return np.argmax(getTotalGiniIndex(df, weights) - np.array(getGiniOfColumns(df, weights, RandomAttributes)))
 
 def getTotalGiniIndex(df, weights):
     """
@@ -220,7 +228,7 @@ def getTotalGiniIndex(df, weights):
             gini_S += gini
     return 1-gini_S
 
-def getGiniOfColumns(df, weights):
+def getGiniOfColumns(df, weights, RandomAttributes):
     """
     Gets the weighted gini index for each column
 
@@ -274,11 +282,16 @@ def getGiniOfColumns(df, weights):
             
                 ginis.append((1-sum_gini_label)*sum(Sv_weights)/sum(weights))    
                 
-                
+    if RandomAttributes is not None:
+        NumToIgnore = len(ginis) - RandomAttributes
+        if NumToIgnore > 0:
+            for ind in random.sample(range(len(ginis)), k=NumToIgnore):
+                ginis[ind] = 1  
+              
     return ginis
 
 
-def getEntropySplit(df, weights):
+def getEntropySplit(df, weights, RandomAttributes):
     """
     Finds the best column to split based on entropy
 
@@ -293,7 +306,7 @@ def getEntropySplit(df, weights):
         The index of the best column to split.
 
     """
-    return np.argmin(getTotalEntropy(df, weights) - getEntropyOfColumns(df, weights))
+    return np.argmax(getTotalEntropy(df, weights) - getEntropyOfColumns(df, weights, RandomAttributes))
 
 def getTotalEntropy(df, weights):
     """
@@ -329,7 +342,7 @@ def getTotalEntropy(df, weights):
         
     return entropy_S
 
-def getEntropyOfColumns(df, weights):
+def getEntropyOfColumns(df, weights, RandomAttributes):
     """
     Gets the weighted entropy of each column
 
@@ -389,7 +402,14 @@ def getEntropyOfColumns(df, weights):
                         sum_entropy_label = sum_entropy_label + entropy * sum(Weights_sv)/sum(weights)
             
                 entropies.append(sum_entropy_label)
-        
+                  
+    # If we have to choose random attributes, just set the entropy to one so it will never be chosen. 
+    if RandomAttributes is not None:
+        NumToIgnore = len(entropies) - RandomAttributes
+        if NumToIgnore > 0:
+            for ind in random.sample(range(len(entropies), k=NumToIgnore)):
+                entropies[ind] = 1  
+            
     return entropies
 
 def SplitDataFrameByColumn(df, colToSplitBy, untouched_df, weights):

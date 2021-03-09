@@ -51,13 +51,14 @@ class DecisionTree:
               raise ValueError("InformationGainMethod must be 0, 1, or 2")
               
           self.MakeUnknownCommon = MakeUnknownCommon
+          self.RandomAttributes = None
           df = self.__processCSV(filename)
           #print("CSV Processed")
           self.head = self.__buildTree(df, maxDepth, InformationGainMethod)
           
           
     def BuildFromDataFrame(self, df, maxDepth, InformationGainMethod, Weights, 
-                           MakeUnknownCommon=False, FullDF = None):
+                           MakeUnknownCommon=False, FullDF = None, RandomAttributes = None):
         """
         Initializes a decision tree with example weights. 
 
@@ -85,6 +86,8 @@ class DecisionTree:
               raise ValueError("InformationGainMethod must be 0, 1, or 2")
               
         self.MakeUnknownCommon = MakeUnknownCommon
+        self.RandomAttributes = RandomAttributes
+    
   
         self.__processDataFrame(df)
         #print("CSV Processed")
@@ -195,7 +198,7 @@ class DecisionTree:
             
         
         else:
-            BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod, weights)
+            BestSplitterCol = TreeHelper.findBestSplit(df,InformationGainMethod, weights, self.RandomAttributes)
             
             [SplitDFs, labels, Split_Weights] = TreeHelper.SplitDataFrameByColumn(df, BestSplitterCol, untouched_df, weights)
             
