@@ -107,27 +107,7 @@ filename = ('Forest500.pkl')
 
 dill.dump_session(filename)
 print('saved')
-# %%
-dill.load_session(filename)
- 
-divide_by = 5000
-a = np.array([training_accuracy2[-1]]*450) + np.random.random(450)/divide_by
-b = np.array([testing_accuracy2[-1]]*450) + np.random.random(450)/divide_by
-training_accuracy2 = np.concatenate((np.array(training_accuracy2),a))
-testing_accuracy2 = np.concatenate((np.array(testing_accuracy2),b))
 
-
-a = np.array([training_accuracy4[-1]]*450) + np.random.random(450)/divide_by
-b = np.array([testing_accuracy4[-1]]*450) + np.random.random(450)/divide_by
-training_accuracy4 = np.concatenate((np.array(training_accuracy4),a))
-testing_accuracy4 = np.concatenate((np.array(testing_accuracy4),b))
-
-a = np.array([training_accuracy6[-1]]*450) + np.random.random(450)/divide_by
-b = np.array([testing_accuracy6[-1]]*450) + np.random.random(450)/divide_by
-
-training_accuracy6 = np.concatenate((np.array(training_accuracy6),a))
-testing_accuracy6 = np.concatenate((np.array(testing_accuracy6),b))
-num_trees = range(500)
 # %%
 import matplotlib.pyplot as plt
 
@@ -135,20 +115,20 @@ fig = plt.figure()
 color ='tab:red'
 plt.xlabel('Num Trees')
 plt.ylabel('Error Rate Training Data')
-plt.plot(num_trees, training_accuracy2, color=color, label='Train 2 Feats')
+plt.plot(num_trees, training_accuracy2,  label='Train 2 Feats')
 
-plt.plot(num_trees, training_accuracy4, '--', color=color, label='Train 4 Feats')
-plt.plot(num_trees, training_accuracy6, ':', color=color, label='Train 6 Feats')
+plt.plot(num_trees, training_accuracy4, '--', label='Train 4 Feats')
+plt.plot(num_trees, training_accuracy6, ':',  label='Train 6 Feats')
 #ax2 = ax1.twinx()
 
 
-color = 'tab:blue'
+
 #ax2.set_ylabel('Error Rate Test Data', color = color)
-plt.plot(num_trees, testing_accuracy2, color=color, label='Test 2 Feats')
+plt.plot(num_trees, testing_accuracy2, label='Test 2 Feats')
 
-plt.plot(num_trees, testing_accuracy4, '--',color=color, label='Test 4 Feats')
+plt.plot(num_trees, testing_accuracy4, '--', label='Test 4 Feats')
 
-plt.plot(num_trees, testing_accuracy6, ':', color=color, label='Test 6 Feats')
+plt.plot(num_trees, testing_accuracy6, ':', label='Test 6 Feats')
 
 plt.legend(loc='best', ncol=2)
 plt.title('Traing and Testing Accuracy of Random Forest, Choose 2')
@@ -158,3 +138,104 @@ FigOutAccuracy = 'D:\\School\\Spring 2021\\CS 6350\\Homework\\HW2\\RandomForestA
 plt.savefig(FigOutAccuracy, dpi=fig.dpi)
 
 plt.show()
+
+
+# %% Bias and Variance Decomposition
+
+import random
+
+num_bag = 100
+num_trees = 1000
+
+ListOfForests = []
+for bag in range(num_bag):
+    
+    print(bag, '/', num_bag) 
+    examples = random.sample(range(df.shape[0]), 1000)
+    CurrDF = training_table.iloc[examples,:]
+    CurrForest = RandomForest(CurrDF, 4, CompleteDataSet=training_table)
+    
+    CurrForest.BuildNTrees(num_trees)
+    
+    ListOfForests.append(CurrForest)
+
+import dill
+
+filename = ('VarianceSessionForest.pkl')
+
+dill.dump_session(filename)
+print('saved')
+# %% Bias and Variance of Each Tree
+
+# Get all of the individual trees
+Trees = []
+for Forest in ListOfForests:
+    Trees.append(Forest.trees[0])
+    
+# calculate biases
+biases = []
+predictions = np.zeros([num_trees, test_df.shape[0]])
+for i in range(0, test_df.shape[0]):
+    if i % 1000 == 0:
+        print(i)
+    sum_for_example = 0
+    for Tree_ind in range(len(Trees)):
+        Tree = Trees[Tree_ind]
+        if Tree.Predict(test_df.iloc[i,:]) == 'no':
+            sum_for_example += 0
+            predictions[Tree_ind, i] = 0
+        else:
+            sum_for_example += 1
+            predictions[Tree_ind, i] = 1
+            
+    correct_answer = 0
+    if (test_df.iloc[i,-1]=='yes'):
+        correct_answer = 1
+    biases.append(np.square((sum_for_example/num_trees) - correct_answer))
+    
+Variances = []
+for Tree_ind in range(len(Trees)):
+    samples = predictions[Tree_ind,:]
+    mean_samples = sum(samples)/len(samples)
+    variance = 1/(len(samples-1)) * sum(np.square(predictions[0,:] - np.mean(predictions[0,:])))
+    Variances.append(variance)
+
+bias = sum(biases)/len(biases)
+variance = sum(Variances)/len(Variances)
+print('The bias was %4.3f The variance was %4.3f. The general squared error was %4.3f' %(bias, variance, bias+variance))
+
+# %% Bias and Variance of Each Forest Method
+  
+# calculate biases
+biases = []
+predictions = np.zeros([num_bag, test_df.shape[0]])
+for i in range(0, test_df.shape[0]):
+    if i % 1000 == 0:
+        print(i)
+    sum_for_example = 0
+    for forest_ind in range(len(ListOfForests)):
+        Forest = ListOfForests[forest_ind]
+        if Forest.Predict(test_df.iloc[i,:]) == 'no':
+            sum_for_example += 0
+            predictions[forest_ind, i] = 0
+        else:
+            sum_for_example += 1
+            predictions[forest_ind, i] = 1
+            
+    correct_answer = 0
+    if (test_df.iloc[i,-1]=='yes'):
+        correct_answer = 1
+    biases.append(np.square((sum_for_example/num_bag) - correct_answer))
+    
+Variances = []
+for forest_ind in range(len(ListOfForests)):
+    samples = predictions[forest_ind,:]
+    mean_samples = sum(samples)/len(samples)
+    variance = 1/(len(samples-1)) * sum(np.square(predictions[0,:] - np.mean(predictions[0,:])))
+    Variances.append(variance)
+
+bias = sum(biases)/len(biases)
+variance = sum(Variances)/len(Variances)
+print('For the Random Forest, the bias was %4.3f The variance was %4.3f. The general squared error was %4.3f' %(bias, variance, bias+variance))
+
+

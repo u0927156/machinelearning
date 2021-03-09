@@ -81,7 +81,7 @@ num_trees = []
 range_end = 500
 
 # Create Bagged Predictor
-Bagged = BaggedTree(df)
+Bagged = BaggedTree(training_table)
 Bagged.BuildNTrees(1)
 
 
@@ -94,6 +94,11 @@ for i in range(0, range_end):
     
     Bagged.BuildNTrees(1)
     
+import dill
+filename = ('Bagging500.pkl')
+
+dill.dump_session(filename)
+print('saved')
 # %% 
 print(training_accuracy)
 print(testing_accuracy)
@@ -127,8 +132,8 @@ plt.show()
 
 import random
 
-num_bag = 40
-num_trees = 40
+num_bag = 100
+num_trees = 1000
 
 ListOfBags = []
 for bag in range(num_bag):
