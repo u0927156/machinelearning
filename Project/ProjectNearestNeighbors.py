@@ -80,7 +80,7 @@ Y = df.iloc[:,-1]
 X = df.iloc[:,0:14]
 
 Y = Y.astype(int)
-neighbors = KNeighborsClassifier(n_neighbors=1, weights='distance')
+neighbors = KNeighborsClassifier(n_neighbors=10, weights='distance')
 neighbors.fit(X,Y)
 
 test_predictions = neighbors.predict(X)

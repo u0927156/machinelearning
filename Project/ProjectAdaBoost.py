@@ -36,7 +36,7 @@ X = df.iloc[:,0:14]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=0)
 
 AdaBooster = AdaBoostClassifier(base_estimator = tree.DecisionTreeClassifier(max_depth=2))
-AdaBooster = AdaBooster.fit(X,y)
+AdaBooster = AdaBooster.fit(X_train,y_train)
 
 testDF = pd.read_csv(test)
 

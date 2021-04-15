@@ -30,7 +30,7 @@ for i in range(14):
 Y = df.iloc[:,-1]
 X = df.iloc[:,0:14]
 
-bagger = BaggingClassifier(n_estimators=300, bootstrap_features=True)
+bagger = BaggingClassifier(n_estimators=100, bootstrap_features=True)
 bagger = bagger.fit(X,Y)
 
 testDF = pd.read_csv(test)
@@ -48,4 +48,4 @@ predictions = bagger.predict(testDF.iloc[:,1:15])
 
 predictionDF = pd.DataFrame(predictions)
 predictionDF["ID"] = testDF["ID"].values
-predictionDF.to_csv('Predictions_4.csv', index=False, header=['Prediction','ID'])
+predictionDF.to_csv('Predictions_bagging.csv', index=False, header=['Prediction','ID'])
