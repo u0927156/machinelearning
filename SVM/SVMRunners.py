@@ -92,50 +92,55 @@ print('The weight vector was: $', SVM.w, '$.')
 
 # %% Dual SVM
 
-gamma = 1
-def GaussianKernel(x1, x2):
-    if x1.ndim>1 or x2.ndim > 1:
-        return np.exp(-np.power(np.linalg.norm(x1 - x2, axis=1), 2) / gamma)
-    else:
-        return np.exp(-np.power(np.linalg.norm(x1 - x2), 2) / gamma)
-
-from DualSVM import DualSVM
-
-
-
-print('Gamma =', gamma)
+gamma_list = [.1, .5, 1, 5, 100]
+for gamma in gamma_list:
     
-for C in [100, 500, 700]:
+    def GaussianKernel(x1, x2):
+        if x1.ndim>1 or x2.ndim > 1:
+            return np.exp(-np.power(np.linalg.norm(x1 - x2, axis=1), 2) / gamma)
+        else:
+            return np.exp(-np.power(np.linalg.norm(x1 - x2), 2) / gamma)
+    
+    from DualSVM import DualSVM
     
     
     
-    SVM = DualSVM(C = C/873, kernel = GaussianKernel)
-    
-    #num_examples = 200;
-    SVM.BuildSVM(df.iloc[:,:])
-    
-    num_wrong = 0
-    num_total = df.shape[0]
-    for i in range(df.shape[0]):
-        pred = SVM.Predict(df.iloc[i,:])
+    print('Gamma =', gamma)
         
-        if df.iloc[i,-1] != pred:
-            num_wrong += 1
+    for C in [100, 500, 700]:
+        
+        
+        
+        SVM = DualSVM(C = C/873, kernel = GaussianKernel)
+        
+        #num_examples = 200;
+        SVM.BuildSVM(df.iloc[:,:])
+        
+        """
+        num_wrong = 0
+        num_total = df.shape[0]
+        for i in range(df.shape[0]):
+            pred = SVM.Predict(df.iloc[i,:])
             
-
-    print('For C = ', C, '/873 \nTraining error was:', num_wrong/num_total)
-        
-    num_wrong = 0
-    num_total = test_df.shape[0]
-    for i in range(test_df.shape[0]):
-        pred = SVM.Predict(test_df.iloc[i,:])
-        
-        if test_df.iloc[i,-1] != pred:
-            num_wrong += 1
+            if df.iloc[i,-1] != pred:
+                num_wrong += 1
+                
+    
+        print('For C = ', C, '/873 \nTraining error was:', num_wrong/num_total)
             
-
-    print('\nTesting error was:', num_wrong/num_total)
-    print(SVM.w)
+        num_wrong = 0
+        num_total = test_df.shape[0]
+        for i in range(test_df.shape[0]):
+            pred = SVM.Predict(test_df.iloc[i,:])
+            
+            if test_df.iloc[i,-1] != pred:
+                num_wrong += 1
+                
+    
+        print('\nTesting error was:', num_wrong/num_total)
+        """
+        print('Num alphas = ', len(SVM.alphas))
+        #print(SVM.w)
     
 # %% 
    
