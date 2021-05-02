@@ -283,4 +283,4 @@ for depth in depths:
         #print('Testing error was: %.3f \\\\' % (num_wrong/num_total))
         test_error = (num_wrong/num_total)
         
-        print('%d & %d & %.3f & %.3f \\hline \\\\' % (depth, width, train_error, test_error))
+        print('%d & %d & %.3f & %.3f \\\\ \\hline ' % (depth, width, train_error, test_error))
