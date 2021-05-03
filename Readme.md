@@ -25,3 +25,9 @@ There are three perceptron classes availabe for use. A standard perceptron, a vo
 
 They all operate in the same way. Create an instance of the class. Then call build perceptron using a dataframe. After that you can make predictions by using a row of test data. 
 The perceptron assumes you have left the expected output on because it knows you're lazy. It is very good at perceiving after all
+
+SVM: 
+
+The interface for using SVMs are the same as perceptrons. Create an instance of the class and then build using a dataframe. Predictions can be made using the Predict() method.
+
+
