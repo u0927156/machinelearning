@@ -93,6 +93,7 @@ testDF = ProcessTestingDataFrame(testDF)
 
 for i in range(len(testDF.columns)):
     testDF.iloc[:,i] = labelProcessor.fit_transform(testDF.iloc[:,i])
+    
 testDF['fake_results'] = pd.Series(0 for x in range(len(testDF.index)))
 # %% 
 predictionDF = pd.DataFrame(columns = ["ID", "Prediction"])
